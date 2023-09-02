@@ -1,0 +1,1141 @@
+exec sql begin declare section; 
+ 
+char u[20]="system",pw[20]="project123";
+ 
+int acc,pcode;
+int temp,cid,und;
+char cphone[12];
+char name[30],city[20],add[100];
+ 
+int xacc,xcall,xbill;
+int ri;
+char xphone[12];
+ 
+int xsms/*I*/, xmms/*I*/;
+float xsmsr,xmmsr, xgprskb/*I*/,xgprsrate,xstdmin/*I*/, xnatroamim/*I*/, xnatroamom/*I*/, xnatroamir, xnatroamor, xstdrate, xisdmin/*I*/;
+float xinterroami/*I*/, xinterroamo/*I*/, xinterroamir,xinterroamor;
+float xisdrate,xgrandtotal;
+
+long int xaccount;
+int xbank;
+char xmethod[20];
+
+exec sql end declare section;
+ 
+exec sql include sqlca;
+ 
+#include<iostream>
+#include<windows.h>
+#include<conio.h>
+#include<stdio.h>
+#include<string.h>
+#include<cstring>
+#include<stdlib.h> 
+ 
+using namespace std;
+void gotoxy(int x, int y)
+{
+  static HANDLE h = NULL;  
+  if(!h)
+    h = GetStdHandle(STD_OUTPUT_HANDLE);
+  COORD c = { x, y };  
+  SetConsoleCursorPosition(h,c);
+}
+
+void insertbank(char p[10],int a)
+{ 
+  for(int i=0;i<10;i++)
+        xphone[i]=p[i];
+    xphone[10]=NULL;
+ 	xacc=a;
+ 	exec sql select bill_id,call_id into :xbill,:xcall from tphone where PHONE_NO=:xphone AND ACC_NO=:xacc;
+	if(sqlca.sqlcode==0)
+	{ 
+       cout<<"\t\tEnter account number: ";
+       cin>>xaccount;
+       cout<<"\n\t\tEnter method of transaction:\n";
+       int d;
+       cout<<"\t\t1. Credit card \n\t\t2. Debit card\n\t\t3. Net banking\n\t\t4. Cheque\n";
+       cout<<"Enter your choice: ";
+       cin>>d;
+       if(d==1)
+       { 
+            char n[]="Credit card";
+            for(int j=0;j<strlen(n);j++)
+            xmethod[j]=n[j];
+       }
+       else if(d==2)
+       {
+            char n[]="Debit card";
+            for(int j=0;j<strlen(n);j++)
+            xmethod[j]=n[j];
+       }
+       else if(d==3)
+       { 
+            char n[]="Net Banking";
+            for(int j=0;j<strlen(n);j++)
+            xmethod[j]=n[j];
+       }
+       else if(d==4)
+       { 
+            char n[]="Cheque";
+            for(int j=0;j<strlen(n);j++)
+            xmethod[j]=n[j];
+       }
+       else
+            cout<<endl<<"Invaild choice ";
+
+        exec sql select BANK_ID into :xbank from tcal where CALL_ID=:xcall;
+        exec sql insert into bank (BANK_ID,ACCOUNT,METHOD,ACC_NO) values (:xbank,:xaccount,:xmethod,:xacc); 
+        exec sql commit work;
+    }
+    else
+        cout<<"Error code: "<<sqlca.sqlcode<<endl<<"Message: "<<sqlca.sqlerrm.sqlerrmc<<endl<<"File not found";
+}
+
+void selectbank(char p[10],int a)
+{ 
+  for(int i=0;i<10;i++)
+        xphone[i]=p[i];
+    xphone[10]=NULL;
+ 	xacc=a;
+ 	exec sql select bill_id,call_id into :xbill,:xcall from tphone where PHONE_NO=:xphone AND ACC_NO=:xacc;
+	if(sqlca.sqlcode==0)
+    {
+        exec sql select BANK_ID into :xbank from tcal where CALL_ID=:xcall;
+        if(sqlca.sqlcode==0)
+        {
+        exec sql select ACCOUNT,METHOD,ACC_NO INTO :xaccount,:xmethod,xacc from bank where BANK_ID = :xbank; 
+        exec sql select cname,caddr,ccity,cpcode into :name,:add,:city,:pcode from Tcustomer where acc_no=:acc;
+ 		cout<<"\n\t\tCustomer Id : "<<xacc<<endl<<"\t\t\tName = "<<name<<endl<<"\t\t\tCity = "<<city<<endl;
+		cout<<"\t\t\tAddress = "<<add<<endl<<"\t\t\tPin code = "<<pcode<<endl; 
+ 	    cout<<"\t\tBank id : "<<xbank<<endl<<"\t\tAccount : "<<xaccount<<endl<<"\t\tMethod : "<<xmethod<<endl;
+        }
+        else
+            cout<<"\n\n\t\t\t\tFILE Not Found.....";
+    }
+    else
+        cout<<"Error code: "<<sqlca.sqlcode<<endl<<"Message: "<<sqlca.sqlerrm.sqlerrmc<<endl<<"File not found";
+}
+
+void editbank(char p[10],int a)
+{ 
+    int ch;
+    for(int i=0;i<10;i++)
+        xphone[i]=p[i];
+    xphone[10]=NULL;
+ 	xacc=a;
+ 	exec sql select bill_id,call_id into :xbill,:xcall from tphone where PHONE_NO=:xphone AND ACC_NO=:xacc;
+	if(sqlca.sqlcode==0)
+    {
+        cout<<"=============================================================================";
+        cout<<"\n\t\t\t Current Customer Bank Details"<<endl;
+        cout<<"\n=============================================================================";
+        selectbank(p,a);
+        cout<<"=============================================================================";
+        cout<<"\n\t\t\t\t  Edit What ??????    "<<endl;
+        cout<<endl<<"\t1.Account  2.Method"<<endl;
+        cout<<"=============================================================================";
+        pp :
+        cout<<endl<<"\t\t\t\tEnter Option   :  ";
+        cin>>ch;
+        if(ch==1)
+        {
+            cout<<"\n\t\t\t\tEnter Account Number  : ";
+            cin>>xaccount;        
+        }
+        if(ch==2)
+        {
+            cout<<"Enter method of transaction:\n";
+            int d;
+            cout<<"\t\t1. Credit card \n\t\t2. Debit card\n\t\t3. Net banking\n\t\t4. Cheque\n";
+            cout<<"enter your choice";
+            cin>>d;
+            if(d==1)
+            { 
+                char n[]="Credit card";
+                for(int j=0;j<strlen(n);j++)
+                xmethod[j]=n[j];
+            }
+            else if(d==2)
+            {
+                char n[]="Debit card";
+                for(int j=0;j<strlen(n);j++)
+                xmethod[j]=n[j];
+            }
+            else if(d==3)
+            { 
+                char n[]="Net Banking";
+                for(int j=0;j<strlen(n);j++)
+                xmethod[j]=n[j];
+            }
+            else if(d==4)
+            { 
+                char n[]="Cheque";
+                for(int j=0;j<strlen(n);j++)
+                xmethod[j]=n[j];
+            }
+            else
+                cout<<endl<<"Invaild choice ";
+        }
+        exec sql update bank set ACCOUNT = :xaccount, method = :xmethod where bank_id=:xbank and ACC_NO=:xacc;
+        	 	if(sqlca.sqlcode==0)
+ 	{
+  		cout<<"Success"<<endl;
+ 	}
+ 	else
+ 		cout<<"Error code: "<<sqlca.sqlcode<<endl<<"Message: "<<sqlca.sqlerrm.sqlerrmc<<endl<<"File not found";
+ 
+        exec sql commit work;
+    }
+}
+
+void insertphone(int a)
+{ 
+    int count=0;
+    xacc=a;
+    j:
+ 	cout<<"\nEnter phone: "<<endl;
+ 	cin>>xphone;
+    for(int i = 0; i < strlen(xphone); i++)   
+        if(xphone[i] != '\0')  
+            count++;
+    xphone[11]=NULL;
+    if(count==10)
+    {
+ 	    exec sql select cname,caddr,ccity,cpcode into :name,:add,:city,:pcode from Tcustomer where acc_no=:xacc;
+   	    if(sqlca.sqlcode==0)
+     	{
+ 		    cout<<"\t\t\tName = "<<name<<endl<<"\t\t\tPhone Number = "<<xphone<<endl<<"\t\t\t Account number = "<<xacc<<endl;
+ 		    exec sql select seqbill.nextval into :xbill from dual;
+ 		    exec sql select seqcall.nextval into :xcall from dual;
+ 		    exec sql insert into tphone (PHONE_NO,ACC_NO,BILL_ID,CALL_ID) values (:xphone,:xacc,:xbill,:xcall);
+            if(sqlca.sqlcode==0)
+            {
+                cout<<"success";
+            }
+            else
+                cout<<"Error code: "<<sqlca.sqlcode<<endl<<"Message: "<<sqlca.sqlerrm.sqlerrmc<<endl;
+            exec sql commit work ;
+ 	    }
+    	else
+     		cout<<"Error code: "<<sqlca.sqlcode<<endl<<"Message: "<<sqlca.sqlerrm.sqlerrmc<<endl<<"File not found";
+	}	
+    else
+    {
+        cout<<"\nInvalid input for phone number try again";
+        goto j;
+    }
+} 
+ 
+void selectphone(int a)
+{
+    xacc=a;
+    exec sql declare t1 cursor for select phone_no from tphone where acc_no=:xacc;
+    int cou=0;
+    exec sql open t1;
+    do
+    {
+        if (sqlca.sqlcode == 1403) break;
+        else
+        {
+            cou++;
+            exec sql fetch t1 into :xphone;
+            cout<<"\t\tPhone number "<<cou<<" is= "<<xphone<<endl;
+        }
+    }while(1);
+    exec sql close t1; 
+  
+}
+
+void selectcust()
+{ 
+	cout<<"\nEnter account number:";
+    cin>>acc;
+	exec sql select cname,caddr,ccity,cpcode into :name,:add,:city,:pcode from Tcustomer where acc_no=:acc;
+ 	if(sqlca.sqlcode==0)
+ 	{
+  		cout<<"\t\t\tName = "<<name<<endl<<"\t\t\tCity = "<<city<<endl;
+		cout<<"\t\t\tAddress = "<<add<<endl<<"\t\t\tPin code = "<<pcode<<endl; 
+ 	}
+ 	else
+ 		cout<<"Error code: "<<sqlca.sqlcode<<endl<<"Message: "<<sqlca.sqlerrm.sqlerrmc<<endl<<"File not found";
+ 
+  
+} 
+ 
+void insertcust()
+{ 
+ 	cout<<"Enter name: ";
+ 	cin>>name;
+ 	cout<<"Enter city: ";
+ 	cin>>city;
+ 	cout<<"Enter address: ";
+    cin>>add;
+ 	cout<<"Enter pincode: ";
+ 	cin>>pcode;
+ 	exec sql select seqacc.nextval into :acc from dual;
+    exec sql insert into Tcustomer(acc_no,cname,caddr,ccity,cpcode) values(:acc,:name,:add,:city,:pcode);
+ 	 	if(sqlca.sqlcode==0)
+ 	{
+  		cout<<"Success"<<endl;
+ 	}
+ 	else
+ 		cout<<"Error code: "<<sqlca.sqlcode<<endl<<"Message: "<<sqlca.sqlerrm.sqlerrmc<<endl<<"File not found";
+ 
+    cout<<"Your account number is :"<<acc<<endl;
+    exec sql commit work ;
+} 
+
+void editcust(int a)
+{
+    system("cls");
+    int ch;
+    acc=a;
+    cout<<"=============================================================================";
+    cout<<"\n\t\t\t Current Customer Details"<<endl;
+    cout<<"\n=============================================================================";
+    exec sql select cname,caddr,ccity,cpcode into :name,:add,:city,:pcode from Tcustomer where acc_no=:acc;
+ 	if(sqlca.sqlcode==0)
+ 	{
+  		cout<<"\n\t\t\tName = "<<name<<endl<<"\t\t\tAddress = "<<add<<endl;
+		cout<<"\t\t\tCity = "<<city<<endl<<"\t\t\tPin code = "<<pcode<<endl; 
+ 	}
+ 	else
+ 		cout<<"Error code: "<<sqlca.sqlcode<<endl<<"Message: "<<sqlca.sqlerrm.sqlerrmc<<endl<<"File not found";
+    cout<<"=============================================================================";
+    cout<<"\n\t\t\t\t  Edit What ??????    "<<endl;
+    cout<<endl<<"\t1.Name  2.Address  3.City  4.Pin Code "<<endl;
+    cout<<"=============================================================================";
+    pp :
+    cout<<endl<<"\t\t\t\tEnter Option   :  ";
+    cin>>ch;
+    if(ch==1)
+    {
+        cout<<"\n\t\t\t\tEnter Name  : ";
+        cin>>name;        
+    }
+    if(ch==2)
+    {
+        cout<<"\n\t\t\t\tEnter Address : ";
+        cin>>add;
+    }
+    if(ch==3)
+    {
+        cout<<"\n\t\t\t\tEnter City : ";
+        cin>>city;
+    }
+    if(ch==4)
+    {
+        cout<<"\n\t\t\t\tEnter Pincode : ";
+        cin>>pcode;
+    }
+    exec sql update tcustomer set cname = :name, caddr = :add, ccity = :city, cpcode = :pcode where acc_no=:acc;
+    	 	if(sqlca.sqlcode==0)
+ 	{
+  		cout<<"Success"<<endl;
+ 	}
+ 	else
+ 		cout<<"Error code: "<<sqlca.sqlcode<<endl<<"Message: "<<sqlca.sqlerrm.sqlerrmc<<endl<<"File not found";
+ 
+    exec sql commit work;
+} 
+void cal()
+{ 
+ 	xstdrate= 1*xstdmin;
+ 	xnatroamir=2*xnatroamim;
+ 	xnatroamor=2.5*xnatroamom;
+ 	xsmsr=0.50*xsms;
+ 	xmmsr=3*xmms;
+ 	xgprsrate=0.10*xgprskb;
+ 	xisdrate= 8*xisdmin;
+ 	xinterroamir=xinterroami*17;
+ 	xinterroamor=xinterroamo*15;
+ 	xgrandtotal=xstdrate + xnatroamir + xnatroamor + xinterroamir + xinterroamor + xisdrate + xgprsrate + xsmsr + xmmsr;
+} 
+ 
+void insertbill(char p[10],int a)
+{ 
+    for(int i=0;i<10;i++)
+        xphone[i]=p[i];
+    xphone[10]=NULL;
+ 	xacc=a;
+    exec sql select seqbank.nextval into :xbank from dual;
+ 	exec sql select bill_id,call_id into :xbill,:xcall from tphone where PHONE_NO=:xphone AND ACC_NO=:xacc;
+	if(sqlca.sqlcode==0)
+	{
+		cout<<endl<<"  Incoming Calls (mts)        : ";
+ 		cin>>xstdmin;
+ 		cout<<endl<<"  No of SMS                   : ";
+		cin>>xsms;
+		cout<<endl<<"  Roaming Incoming Calls (mts): ";
+		cin>>xnatroamim;
+		cout<<endl<<"  Roaming Outgoing Calls (mts): ";
+		cin>>xnatroamom;
+		cout<<endl<<"  GPRS Usage ( in Kb )        : ";
+		cin>>xgprskb;
+ 		cout<<endl<<"  No of MMS                   : ";
+ 		cin>>xmms;
+ 		cout<<endl<<"  ISD Calls (mts)             : ";
+ 		cin>>xisdmin;
+ 		cout<<endl<<"  Inter Roaming Incoming (mts): ";
+	 	cin>>xinterroami;
+	 	cout<<endl<<"  Inter Roaming Outgoing (mts): ";
+		cin>>xinterroamo;
+ 		cal();
+ 		exec sql insert into tbill(SMS,MMS,GPRSKP,STDMIN,NATROAMIM,NATROAMOM,ISDMIN,INTERROAMI,INTERROAMO,BILL_ID) values (:xsms,:xmms,:xgprskb,:xstdmin,:xnatroamim,:xnatroamom,:xisdmin,:xinterroami,:xinterroamo,:xbill);
+	 	exec sql insert into tcal (SMSR,MMSR,GPRSRATE,NATROAMIR,NATROAMOR,STDRATE,INTERROAMIR,INTERROAMOR,ISDRATE,GRANDTOTAL,CALL_ID,BANK_ID) values (:xsmsr,:xmmsr,:xgprsrate,:xnatroamir,:xnatroamor,:xstdrate,:xinterroamir,:xinterroamor,:xisdrate,:xgrandtotal,:xcall,:xbank);  
+		if(sqlca.sqlcode==0)
+            cout<<"success";
+        else
+            cout<<"Error code: "<<sqlca.sqlcode<<endl<<"Message: "<<sqlca.sqlerrm.sqlerrmc<<endl<<"File not found";
+        exec sql commit work ;
+	 }
+	 else
+	 {
+		cout<<"Error code: "<<sqlca.sqlcode<<endl<<"Message: "<<sqlca.sqlerrm.sqlerrmc<<endl<<"File not found";
+		cout<<"\n\nEnter any key:";
+		cin.get();
+	 }
+} 
+ 
+void selectbill(char p[10],int a)
+{ 
+    for(int i=0;i<10;i++)
+        xphone[i]=p[i];
+    xphone[10]=NULL;
+    xacc=a;
+ 	exec sql select bill_id,call_id into :xbill,:xcall from tphone where PHONE_NO=:xphone AND ACC_NO=:xacc;
+ 	exec sql select SMS,MMS,GPRSKP,STDMIN,NATROAMIM,NATROAMOM,ISDMIN,INTERROAMI,INTERROAMO into :xsms,:xmms,:xgprskb,:xstdmin,:xnatroamim,:xnatroamom,:xisdmin,:xinterroami,:xinterroamo from Tbill where bill_id=:xbill ;
+ 	exec sql select SMSR,MMSR,GPRSRATE,NATROAMIR,NATROAMOR,STDRATE,INTERROAMIR,INTERROAMOR,ISDRATE,GRANDTOTAL into :xsmsr,:xmmsr,:xgprsrate,:xnatroamir,:xnatroamor,:xstdrate,:xinterroamir,:xinterroamor,:xisdrate,:xgrandtotal from tcal where  CALL_ID=:xcall;  
+ 	if(sqlca.sqlcode==0)
+ 	{
+ 		cout<<"=============================================================================";
+ 		cout<<endl;
+ 		cout<<"\t\t        CALLS          ";
+ 		cout<<"\t"<<"      MINUTES/No.";
+ 		cout<<"\t"<<"AMOUNT";
+ 		cout<<endl;
+ 		cout<<"=============================================================================";
+ 		cout<<endl<<"\t\t  Incoming Calls          ";
+ 		cout<<"\t"<<xstdmin;
+ 		cout<<"\t\t"<<xstdrate;
+ 		cout<<endl<<"\t\t  No of SMS               ";
+ 		cout<<"\t"<<xsms;
+ 		cout<<"\t\t"<<xsmsr;
+ 		cout<<endl<<"\t\t  Roaming Incoming Calls   ";
+ 		cout<<"\t"<<xnatroamim;
+ 		cout<<"\t\t"<<xnatroamir;
+ 		cout<<endl<<"\t\t  Roaming Outgoing Calls   ";
+ 		cout<<"\t"<<xnatroamom;
+ 		cout<<"\t\t"<<xnatroamor;
+ 		cout<<endl<<endl<<"\t\t  GPRS Usage ( in Kb )     ";
+ 		cout<<"\t"<<xgprskb;
+ 		cout<<"\t\t"<<xgprsrate;
+ 		cout<<endl<<"\t\t  No of MMS                ";
+ 		cout<<"\t"<<xmms;
+ 		cout<<"\t\t"<<xmmsr;
+ 		cout<<endl<<endl<<"\t\t  ISD Calls                ";
+ 		cout<<"\t"<<xisdmin;
+ 		cout<<"\t\t"<<xisdrate;
+ 		cout<<endl<<"\t\t  Inter Roaming Incoming   ";
+ 		cout<<"\t"<<xinterroami;
+ 		cout<<"\t\t"<<xinterroamir;
+ 		cout<<endl<<"\t\t  Inter Roaming Outgoing   ";
+ 		cout<<"\t"<<xinterroamo;
+ 		cout<<"\t\t"<<xinterroamor;
+ 		cout<<endl<<endl<<"\t\t  | Total Charges |           ";
+ 		cout<<"\t\t\t"<<xgrandtotal;
+ 	}
+ 	else
+ 	{
+ 			cout<<endl<<endl<<"============================================================================="<<endl;
+ 			cout<<"\t\t\tFile not found ....No such user"<<endl;
+ 			cout<<endl;
+ 			cout<<"=============================================================================";
+ 			cout<<endl;
+ 	}
+}
+
+void editbill(char p[10],int a)
+{
+    char d;
+    system("cls");
+    for(int i=0;i<10;i++)
+        xphone[i]=p[i];
+    xacc=a;
+    cout<<"=============================================================================";
+    cout<<"\n\t\t\t Current Customer Details";
+    cout<<"\n=============================================================================";
+    selectbill(xphone,xacc);
+    cout<<endl<<"========================================================================"; 
+    cout<<endl<<"\t                 Press Any Key To Continue      "<<endl;
+    cout<<endl<<"========================================================================";
+    cin>>d;
+    system("cls");
+    cout<<endl<<"========================================================================";
+    cout<<endl<<"                     Edit What?????      ";
+    cout<<endl<<"========================================================================";
+    cout<<endl;
+    cout<<"1. Incoming Calls\t\t\t6. No of MMS"<<endl;
+    cout<<"2. No of SMS\t\t\t\t7. ISD Calls\t\t"<<endl;
+    cout<<"3. Roaming Incoming Calls\t\t8. International Roaming Incoming"<<endl;
+    cout<<"4. Roaming Outgoing Calls\t\t9. International Roaming Outgoing"<<endl;
+    cout<<"5. GPRS Usage ( in Kb )\t\t\t"<<endl;
+    cout<<"=============================================================================";
+    cout<<endl<<"Enter  Choice      : ";
+    int ch;
+    pp :
+    cin>>ch;
+    if(ch==1)
+    {
+        cout<<"Enter Incoming Calls min    : ";
+        cin>>xstdmin;
+    }
+    if(ch==2)
+    {
+        cout<<"Enter SMS    : ";
+        cin>>xsms;
+    }
+    if(ch==3)
+    {
+        cout<<"Enter Roaming in     : ";
+        cin>>xnatroamim;
+    }
+    if(ch==4)
+    {
+        cout<<"Enter Roaming out     : ";
+        cin>>xnatroamom;
+    }
+    if(ch==5)
+    {
+        cout<<"Enter GPRS Usage    : ";
+        cin>>xgprskb;
+    }
+    if(ch==6)
+    {
+        cout<<"Enter MMS no     : ";
+        cin>>xmms;
+    }
+    if(ch==7)
+    {
+        cout<<"Enter ISD Min    : ";
+        cin>>xisdmin;
+    }
+    if(ch==8)
+    {
+        cout<<"Enter ISD Roam in    : ";
+        cin>>xinterroami;
+    }
+    if(ch==9)
+    {
+        cout<<"Enter ISD Roamout    : ";
+        cin>>xinterroamo;
+    }
+    if((ch>9)||(ch==0))
+    {
+        cout<<"\n\t\t\t\tInvalid Choice !!!!!"<<endl<<"\t\t\t\t";
+        goto pp;
+    }
+    cal();
+    exec sql select bill_id,call_id into :xbill,:xcall from tphone where PHONE_NO=:xphone AND ACC_NO=:xacc;
+ 	exec sql update tbill set SMS = :xsms, MMS =:xmms, GPRSKP = :xgprskb, STDMIN = :xstdmin, NATROAMIM = :xnatroamim, NATROAMOM = :xnatroamom, ISDMIN = :xisdmin, INTERROAMI = :xinterroami, INTERROAMO = :xinterroamo where bill_id=:xbill ;
+ 	exec sql update tcal set SMSR = :xsmsr, MMSR = :xmmsr, GPRSRATE = :xgprsrate, NATROAMIR = :xnatroamir, NATROAMOR = :xnatroamor, STDRATE = :xstdrate, INTERROAMIR =:xinterroamir, INTERROAMOR =:xinterroamor, ISDRATE =:xisdrate, GRANDTOTAL = :xgrandtotal where  CALL_ID=:xcall; 
+    	 	if(sqlca.sqlcode==0)
+ 	{
+  		cout<<"Success"<<endl;
+ 	}
+ 	else
+ 		cout<<"Error code: "<<sqlca.sqlcode<<endl<<"Message: "<<sqlca.sqlerrm.sqlerrmc<<endl<<"File not found";
+ 
+    exec sql commit work;
+}
+
+int main()
+{ 
+ 	int ch;
+ 	char r,tem;
+ 	char uname[30],pw[10];
+ 	gotoxy(1,5);
+ 	cout<<"\t\t\t";
+ 	cout<<"=============================================================================";
+ 	gotoxy(32,6);
+ 	cout<<"\t\t\t";
+ 	cout<<"HOMEPAGE OF ADMIN";
+ 	cout<<endl;
+ 	cout<<"\t\t\t";
+ 	cout<<"=============================================================================";
+ 	gotoxy(27,10);
+ 	cout<<"Enter username: ";
+ 	cin>>uname;
+ 	if(strcmp(uname,"admin")==0)
+ 	{
+ 		g:
+ 		cout<<"\t\t\t   Enter password: ";
+ 		cin>>pw;
+ 		if(strcmp(pw,"admin199901")==0)
+ 		{
+ 		system("cls");
+ 		}
+ 		else
+ 		{
+ 		cout<<"Wrong password";
+ 		goto g;
+ 		}
+ 	}
+ 	else
+ 	{
+ 		cout<<"wrong username";
+ 		exit(0);
+ 	}
+ 	y:
+ 	system("cls");
+ 	exec sql connect:u identified by:p;
+ 	if(sqlca.sqlcode==0)
+ 	{
+ 	cout<<"\n\n\t\t";
+ 	cout<<"============================================================================="<<endl<<endl;
+ 	cout<<"\t\t";
+ 	cout<<"\t\t\tTELEPHONE BILLER"<<endl;
+ 	cout<<endl;
+ 	cout<<"\t\t";
+ 	cout<<"============================================================================="<<endl<<endl;
+ 	cout<<"\t\t";
+ 	cout<<"1) ENTER CUSTOMER DATABASE"<<endl<<endl;
+ 	cout<<"\t\t";
+	cout<<"2) ENTER PHONE DATABASE"<<endl<<endl;	
+	cout<<"\t\t";
+	cout<<"3) ENTER BILL  DATABASE"<<endl<<endl;	
+	cout<<"\t\t";
+	cout<<"4) ENTER  BANK DATABASE"<<endl<<endl;
+ 	cout<<"\t\t";
+	cout<<"5) ENTER  BILLING  DETAILS"<<endl<<endl;
+ 	cout<<"\t\t";
+	cout<<"6) EXIT  FROM  PROGRAM"<<endl<<endl<<endl;
+ 	cout<<"\t\t";
+ 	cout<<"=============================================================================";
+ 	cout<<endl;
+ 	cout<<"\t\t";
+ 	cout<<"        Enter Your Choice     : ";
+  	cin>>ch;
+  	switch(ch)
+  	{
+ 		case 1:
+ 	  {
+ 		system("cls");
+ 		int op=0;
+ 		x:
+ 		system("cls");
+ 		cout<<endl<<endl;
+		cout<<"* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ";
+		cout<<endl;
+ 		cout<<"\t\t\t    CUSTOMER SECTION";
+ 		cout<<endl;
+ 		cout<<"\t\t\t    ================";
+ 		cout<<endl<<endl<<endl;
+ 		cout<<"\t\t\t\t1) ADD\n\n";//over
+ 		cout<<"\t\t\t\t2) EDIT\n\n";
+ 		cout<<"\t\t\t\t3) DELETE\n\n";
+ 		cout<<"\t\t\t\t4) VIEW  \n\n";
+ 		cout<<"\t\t\t\t5) BACK to MAIN";
+ 		cout<<endl<<endl<<endl;
+		cout<<"* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ";
+		cout<<endl<<"        Enter Your Choice     : ";
+ 		cin>>op;
+ 		if(op==1)
+ 		{
+ 			system("cls");
+ 			cout<<"=======================================================================";
+ 			cout<<endl;
+ 			cout<<"\t\t\tYOU HAVE CHOSEN TO ADD CUSTOMER";
+ 			cout<<endl<<endl;
+ 			cout<<"=======================================================================";
+ 			cout<<endl<<endl;
+ 			insertcust();
+ 			cout<<"=======================================================================";
+ 			cout<<endl;
+ 			cout<<"\t\t\tCUSTOMER ADDED SUCCESSFULLY";
+ 			cout<<endl<<endl;
+ 			cout<<"=======================================================================";
+ 			cout<<endl<<"Enter any key....";
+ 			cin>>r;
+ 			goto x;
+ 		}
+        if(op==2)
+        {
+            system("cls");
+            cout<<"============================================================================="<<endl;
+            cout<<"\t\t\tYou Have chosen to EDIT CUSTOMER";
+            cout<<endl;
+            cout<<"=============================================================================";
+            cout<<endl;
+            cout<<"\n\n\n\n\n\n\n\n\n\t\t    Enter CUSTOMER id to be EDITED     : ";
+            cin>>cid;
+            editcust(cid);
+            cout<<"=============================================================================";
+            cout<<"\n\t\t\tCUSTOMER EDITED SUCCESSFULLY";
+            cout<<endl;
+            cout<<"=============================================================================";
+            cout<<endl<<"Enter any key....";
+ 			cin>>r;
+            goto x;
+        }
+ 		if(op==3)
+ 		{
+ 			system("cls");
+ 			cout<<"=======================================================================";
+ 			cout<<endl;
+ 			cout<<"\t\t\tYOU HAVE CHOSEN TO DELETE CUSTOMER";
+ 			cout<<endl<<endl;
+ 			cout<<"=======================================================================";
+ 			cout<<"\n\t\t\tEnter the account number to delete :";
+            cin>>acc;
+            exec sql select bill_id,call_id into :xbill,:xcall from tphone where ACC_NO=:acc;
+            exec sql select BANK_ID into :xbank from tcal where CALL_ID=:xcall;
+            exec sql delete from bank where BANK_ID=:xbank;
+            exec sql delete from tbill where BILL_ID=:xbill;
+            exec sql delete from tcal where CALL_ID=:xcall;
+	        exec sql delete from tphone where ACC_NO=:acc;
+            exec sql delete from tcustomer where ACC_NO=:acc;
+            exec sql commit work;
+            cout<<endl<<endl;
+ 			cout<<"=======================================================================";
+ 			cout<<endl;
+ 			cout<<"\t\t\tCUSTOMER DELETED SUCCESSFULLY";
+ 			cout<<endl<<endl;
+ 			cout<<"=======================================================================";
+ 			cout<<endl<<"Enter any key....";
+ 			cin>>r;
+ 			goto x;
+ 		}
+        if(op==4)
+ 		{
+ 			system("cls");
+ 			cout<<"=============================================================================";
+ 			cout<<endl;
+ 			cout<<"\t\t\tYou Have chosen to VIEW CUSTOMER";
+ 			cout<<endl<<endl;
+ 			cout<<"=============================================================================";
+ 			selectcust();
+ 			cout<<endl<<"Enter any key...";
+ 			cin>>r;
+ 			system("cls");
+ 			goto x;
+ 		}
+         
+ 		if(op==5)
+  		{
+ 			system("cls");
+ 			goto y;
+ 		}
+           if(op==0||op>5)
+        {
+            cout<<"Invalid choice..... Enter any Key";
+            cin>>tem;
+            goto x;
+        }
+         
+	  }
+
+		case 2:
+	  {
+		system("cls");
+		int ck;
+		q:
+		system("cls");
+		cout<<endl<<endl;
+		cout<<"* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ";
+		cout<<endl;
+		cout<<"\t\t\t\tPHONE  SECTION";
+		cout<<endl;
+		cout<<"\t\t\t\t================";
+		cout<<endl<<endl<<endl;		
+		cout<<"\t\t\t\t1) ADD   \n\n";
+		cout<<"\t\t\t\t2) DELETE\n\n";
+		cout<<"\t\t\t\t3) SHOW  \n\n";
+		cout<<"\t\t\t\t4) BACK to MAIN";
+		cout<<endl<<endl<<endl;
+		cout<<"* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ";
+		cout<<endl<<"        ENTER YOUR CHOICE      : ";
+		cin>>ck;
+		if(ck==1)
+		{
+			system("cls");
+			cout<<"======================================================================";
+			cout<<endl;
+			cout<<"\t\t\tYou Have Chosen To ADD a PHONE NUMBER ";
+			cout<<endl<<endl;
+			cout<<"=======================================================================";
+			cout<<"\n\n\t\tEnter CUSTOMER id   : ";
+			cin>>cid;
+			insertphone(cid);
+			cout<<"=======================================================================";
+			cout<<endl;
+			cout<<"\t\t\tPHONE NUMBER ADDED SUCCESSFULLY";
+			cout<<endl<<endl;
+			cout<<"=======================================================================";
+			cout<<endl<<"Enter any key...";
+			cin>>r;
+			goto q;
+		}
+        if(ck==2)
+		{
+			system("cls");
+			cout<<"======================================================================";
+			cout<<endl;
+			cout<<"\t\t\tYou Have Chosen To DELETE a PHONE NUMBER ";
+			cout<<endl<<endl;
+			cout<<"=======================================================================";
+			cout<<"\n\n\t\t\tEnter CUSTOMER id   : ";
+			cin>>cid;
+			cout<<"\t\tEnter CUSTOMER PHONE NUMBER you want to delete    : ";
+			cin>>cphone;
+            exec sql select bill_id,call_id into :xbill,:xcall from tphone where ACC_NO=:cid;
+            exec sql select BANK_ID into :xbank from tcal where CALL_ID=:xcall;
+            exec sql delete from bank where BANK_ID=:xbank;
+	        exec sql delete from tbill where BILL_ID=:xbill;
+            exec sql delete from tcal where CALL_ID=:xcall;
+            exec sql delete from tphone where ACC_NO=:cid AND PHONE_NO=:cphone;
+            exec sql commit work;
+            cout<<"=======================================================================";
+			cout<<endl;
+			cout<<"\t\t\tPHONE NUMBER DELETED SUCCESSFULLY";
+			cout<<endl<<endl;
+			cout<<"=======================================================================";
+			cout<<endl<<"Enter any key...";
+			cin>>r;
+			goto q;
+		}
+        if(ck==3)
+        {
+            system("cls");
+ 			cout<<"=============================================================================";
+ 			cout<<endl;
+ 			cout<<"\t\t\tYou Have chosen to VIEW phone number";
+ 			cout<<endl<<endl;
+ 			cout<<"=============================================================================";
+ 			cout<<"\n\n\n\n\n\n\n\n\n\t\t    Enter CUSTOMER id    : ";
+  			cin>>cid;	
+	 		selectphone(cid);
+	  		cout<<endl<<"Enter any key...";
+ 			cin>>r;
+ 			goto q;
+        }
+        	if(ck==4)
+  		{
+ 			system("cls");
+ 			goto y;
+ 		}
+            if(ck==0||ck>4)
+        {
+            cout<<"Invalid choice..... Enter any Key";
+            cin>>tem;
+            goto q;
+        }
+	  }
+
+		case 3:
+ 	  {
+ 		system("cls");
+ 		int sel;
+ 		z:
+ 		system("cls");
+ 		cout<<endl<<endl;
+ 		cout<<"* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ";
+ 		cout<<endl;
+ 		cout<<"\t\t\t\tBILLING  SECTION";
+ 		cout<<endl;
+ 		cout<<"\t\t\t\t================";
+ 		cout<<endl<<endl<<endl;		
+ 		cout<<"\t\t\t\t1) ADD   \n\n";//input calulate
+ 		cout<<"\t\t\t\t2) EDIT  \n\n";
+ 		cout<<"\t\t\t\t3) DELETE\n\n";
+ 		cout<<"\t\t\t\t4) SHOW  \n\n";//bill
+ 		cout<<"\t\t\t\t5) BACK to MAIN";
+ 		cout<<endl<<endl<<endl;
+ 		cout<<"* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ";
+ 		cout<<endl<<"        ENTER YOUR CHOICE      : ";
+ 		cin>>sel;
+ 		if(sel==1)
+ 		{
+ 	    	system("cls");
+ 			cout<<"======================================================================";
+ 			cout<<endl;
+ 			cout<<"\t\t\tYou Have Chosen To ADD BILL";
+ 			cout<<endl<<endl;
+ 			cout<<"=======================================================================";
+ 			cout<<"\n\n\t\tEnter CUSTOMER id   : ";
+			cin>>cid;
+			cout<<"\t\tEnter CUSTOMER PHONE NUMBER to ADD BILL    : ";
+			cin>>cphone;
+			system("cls");
+			cout<<"=======================================================================";
+			insertbill(cphone,cid);
+ 			cout<<"=======================================================================";
+ 			cout<<endl;
+ 			cout<<"\t\t\tBILL ADDED SUCCESSFULLY";
+ 			cout<<endl<<endl;
+ 			cout<<"=======================================================================";
+ 			cout<<endl<<"Enter any key...";
+ 			cin>>r;
+ 			goto z;
+ 		}
+        if(sel==2)
+        {
+            system("cls");
+            cout<<"============================================================================="<<endl;
+            cout<<"\t\t\tYou Have chosen to EDIT PHONE BILL";
+            cout<<endl;
+            cout<<"=============================================================================";
+            cout<<endl;
+            cout<<"\n\n\t\tEnter CUSTOMER id   : ";
+			cin>>cid;
+			cout<<"\t\tEnter CUSTOMER PHONE NUMBER to ADD BILL    : ";
+			cin>>cphone;
+            editbill(cphone,cid);
+            cout<<"============================================================================="<<endl;
+            cout<<"\t\t\tCUSTOMER EDITED SUCCESSFULLY";
+            cout<<endl;
+            cout<<"=============================================================================";
+            cout<<endl<<"Enter any key....";
+ 			cin>>r;
+            goto z;
+}
+        if(sel==3)
+ 		{
+ 			system("cls");
+ 			cout<<"======================================================================";
+ 			cout<<endl;
+ 			cout<<"\t\t\tYou Have Chosen To DELETE BILL";
+ 			cout<<endl<<endl;
+ 			cout<<"=======================================================================";
+ 			cout<<"\n\n\t\tEnter CUSTOMER id   : ";
+			cin>>cid;
+			cout<<"\n\t\tEnter CUSTOMER PHONE NUMBER to DELETE BILL    : ";
+			cin>>cphone;
+            exec sql select bill_id,call_id into :xbill,:xcall from tphone where ACC_NO=:cid and PHONE_NO=:cphone;
+            exec sql select BANK_ID into :xbank from tcal where CALL_ID=:xcall;
+            exec sql delete from bank where BANK_ID=:xbank;
+            exec sql delete from tbill where BILL_ID=:xbill;
+            exec sql delete from tcal where CALL_ID=:xcall;
+	        exec sql commit work;
+            cout<<"=======================================================================";
+ 			cout<<endl;
+ 			cout<<"\t\t\tBILL DELETED SUCCESSFULLY";
+ 			cout<<endl<<endl;
+ 			cout<<"=======================================================================";
+ 			cout<<endl<<"Enter any key...";
+ 			cin>>r;
+ 			goto z;
+ 		}
+ 		if (sel==4)
+ 		{
+ 			system("cls");
+ 			cout<<"=============================================================================";
+ 			cout<<endl;
+ 			cout<<"\t\t\tYou Have chosen to VIEW BILL";
+ 			cout<<endl<<endl;
+ 			cout<<"=============================================================================";
+ 			cout<<"\n\n\n\n\n\n\n\n\n\t\t    Enter CUSTOMER id    : ";
+  			cin>>cid;	
+	 		cout<<"\t    Enter CUSTOMER PHONE NUMBER to VIEW BILL     : ";
+	 		cin>>cphone;
+	 		system("cls");
+	 		selectbill(cphone,cid);
+	  		cout<<endl<<"Enter any key...";
+ 			cin>>r;
+ 			goto z;
+ 		}
+ 		
+  		if(sel==5)
+ 		{ 
+ 			system("cls"); 
+ 			goto y; 
+ 		}
+           if(sel==0||sel>5)
+        {
+            cout<<"Invalid choice..... Enter any Key";
+            cin>>tem;
+            goto z;
+        }
+ 	  }
+       
+       case 4:
+      {
+        system("cls");
+		int bk;
+		d:
+ 		system("cls");
+ 		cout<<endl<<endl;
+ 		cout<<"* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ";
+ 		cout<<endl;
+ 		cout<<"\t\t\t\tBANK  DATABASE";
+ 		cout<<endl;
+ 		cout<<"\t\t\t\t=====================";
+ 		cout<<endl<<endl<<endl;		
+ 		cout<<"\t\t\t\t1) ADD   \n\n";//input calulate
+ 		cout<<"\t\t\t\t2) EDIT  \n\n";
+ 		cout<<"\t\t\t\t3) DELETE\n\n";
+ 		cout<<"\t\t\t\t4) SHOW  \n\n";//bill
+ 		cout<<"\t\t\t\t5) BACK to MAIN";
+ 		cout<<endl<<endl<<endl;
+ 		cout<<"* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ";
+ 		cout<<endl<<"        ENTER YOUR CHOICE      : ";
+ 		cin>>bk;
+         if(bk==1)
+        {  
+ 			system("cls");
+ 			cout<<"======================================================================";
+ 			cout<<endl;
+ 			cout<<"\t\t\tYou Have Chosen To ADD BANK DETAILS";
+ 			cout<<endl<<endl;
+ 			cout<<"=======================================================================";
+ 			cout<<"\n\n\t\tEnter CUSTOMER id   : ";
+			cin>>cid;
+			cout<<"\t\tEnter CUSTOMER PHONE NUMBER to ADD BANK DETAILS    : ";
+			cin>>cphone;
+			cout<<"=======================================================================\n";
+			insertbank(cphone,cid);
+ 			cin.get();
+ 			system("cls");
+ 			cout<<"=======================================================================";
+ 			cout<<endl;
+ 			cout<<"\t\t\tBANK DETAILS ADDED SUCCESSFULLY";
+ 			cout<<endl<<endl;
+ 			cout<<"=======================================================================";
+ 			cout<<endl<<"Enter any key...";
+ 			cin>>r;
+ 			goto d;
+ 	        
+        }
+         if(bk==2)
+        {
+            system("cls");
+            cout<<"============================================================================="<<endl;
+            cout<<"\t\t\tYou Have chosen to BANK DETAILS";
+            cout<<endl;
+            cout<<"=============================================================================";
+            cout<<endl;
+            cout<<"\n\n\t\tEnter CUSTOMER id   : ";
+			cin>>cid;
+			cout<<"\t\tEnter CUSTOMER PHONE NUMBER to ADD BANK DETAILS    : ";
+			cin>>cphone;
+            editbank(cphone,cid);
+            cout<<"============================================================================="<<endl;
+            cout<<"\t\t\tBANK DETAILS EDITED SUCCESSFULLY";
+            cout<<endl;
+            cout<<"=============================================================================";
+            cout<<endl<<"Enter any key....";
+ 			cin>>r;
+            goto d;
+        }
+         if(bk==3)
+        {
+ 			system("cls");
+ 			cout<<"======================================================================";
+ 			cout<<endl;
+ 			cout<<"\t\t\tYou Have Chosen To BANK DETAILS";
+ 			cout<<endl<<endl;
+ 			cout<<"=======================================================================";
+ 			cout<<"\n\n\t\tEnter CUSTOMER id   : ";
+			cin>>cid;
+			cout<<"\n\t\tEnter CUSTOMER PHONE NUMBER to DELETE BANK DETAILS    : ";
+			cin>>cphone;
+            exec sql select bill_id,call_id into :xbill,:xcall from tphone where ACC_NO=:cid and PHONE_NO=:cphone;
+	        exec sql select BANK_ID into :xbank from tcal where CALL_ID=:xcall;
+            exec sql delete from bank where BANK_ID=:xbank;
+            exec sql commit work;
+            cout<<"=======================================================================";
+ 			cout<<endl;
+ 			cout<<"\t\t\tBANK DETAILS  DELETED SUCCESSFULLY";
+ 			cout<<endl<<endl;
+ 			cout<<"=======================================================================";
+ 			cout<<endl<<"Enter any key...";
+ 			cin>>r;
+ 			goto d;
+ 		}
+         if(bk==4)
+        {
+ 			system("cls");
+ 			cout<<"=============================================================================";
+ 			cout<<endl;
+ 			cout<<"\t\t\tYou Have chosen to VIEW BANK DETAILS";
+ 			cout<<endl<<endl;
+ 			cout<<"=============================================================================";
+ 			cout<<"\n\n\n\n\n\n\n\n\n\t\t    Enter CUSTOMER id    : ";
+  			cin>>cid;	
+	 		cout<<"\t    Enter CUSTOMER PHONE NUMBER to VIEW BANK DETAILS     : ";
+	 		cin>>cphone;
+	 		selectbank(cphone,cid);
+	  		cout<<endl<<"Enter any key...";
+ 			cin>>r;
+ 			goto d;
+ 		}
+         if(bk==5)
+        { 
+ 			system("cls"); 
+ 			goto y; 
+ 		}
+         if(bk==0||bk>5)
+        {
+            cout<<"\t\t\tInvalid choice..... Enter any Key";
+            cin>>tem;
+            goto d;
+        }
+    }
+ 		case 5:
+ 	  {
+ 		char f[1];
+ 		system("cls");
+ 		cout<<"=============================================================================";
+ 		cout<<endl;
+ 		cout<<"\t\t\t\tBILLING DETAILS";
+ 		cout<<endl<<endl;
+  		cout<<"=============================================================================";
+ 		cout<<endl;
+ 		cout<<"\t\t STD RATE = Rs.1/minute"<<endl<<endl;
+ 		cout<<"\t\t National Roaming Outgoing RATE = Rs.2/minute"<<endl<<endl;
+ 		cout<<"\t\t National Roaming Incoming RATE = Rs.2.5/minute"<<endl<<endl;
+ 		cout<<"\t\t SMS RATE = Rs.0.50/SMS"<<endl<<endl;
+  		cout<<"\t\t MMS RATE = Rs.3/MMS"<<endl<<endl;
+ 		cout<<"\t\t GPRS RATE = Rs.0.10/kb"<<endl<<endl;
+ 		cout<<"\t\t ISD RATE = Rs.8/minute"<<endl<<endl;
+ 		cout<<"\t\t International Roaming Outgoing RATE = Rs.15/minute"<<endl<<endl;
+ 		cout<<"\t\t International Roaming Incoming RATE = Rs.17/minute"<<endl<<endl;
+ 		cin>>f;
+ 		system("cls");
+ 		goto y;
+ 	  }
+       
+ 		case 6:
+ 	  {
+ 		system("cls");
+ 		char s;
+ 		cout<<"\n\n\n\n\n\n\n\n\n\n\n\n\t\t\tAre You Sure ??? ( Enter 'y' for YES and ANY key for NO )    :";
+ 		cin>>s;
+ 		if(s=='y')
+ 		exit(0);
+ 		if(s!='y')
+ 		 {
+ 			system("cls");
+ 			 goto y;
+ 		}
+ 		
+ 		default:
+ 		system("cls");
+ 		cout<<"\t\t\t=============================================================================";
+ 		cout<<endl<<"\t\t\tINVALID CHOICE TRY AGAIN   ";
+ 		cout<<endl;
+ 		cout<<"\t\t\t=============================================================================";
+ 		cout<<endl<<"\t\tEnter any key...";
+ 		cin>>r;
+  		goto y;
+ 	  }
+  
+ 	}
+  
+ 	}
+ 	else
+ 	cout<<"Error code: "<<sqlca.sqlcode<<endl<<"Message: "<<sqlca.sqlerrm.sqlerrmc;
+ 	return 0;
+}

@@ -1,0 +1,10 @@
+﻿  source.cpp
+C:\Users\mythwin\Desktop\College\A_Subjects\Semester 2\&- CSE2004 - DBMS\Project\source.cpp(358,15): warning C4838: conversion from 'int' to 'SHORT' requires a narrowing conversion
+C:\Users\mythwin\Desktop\College\A_Subjects\Semester 2\&- CSE2004 - DBMS\Project\source.cpp(358,18): warning C4838: conversion from 'int' to 'SHORT' requires a narrowing conversion
+C:\Users\mythwin\Desktop\College\A_Subjects\Semester 2\&- CSE2004 - DBMS\Project\source.cpp(934,12): warning C4102: 'pp': unreferenced label
+C:\Users\mythwin\Desktop\College\A_Subjects\Semester 2\&- CSE2004 - DBMS\Project\source.cpp(1752,8): warning C4102: 'pp': unreferenced label
+C:\Users\mythwin\Desktop\College\A_Subjects\Semester 2\&- CSE2004 - DBMS\Project\source.cpp(1874,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\mythwin\Desktop\College\A_Subjects\Semester 2\&- CSE2004 - DBMS\Project\source.cpp(1875,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\mythwin\Desktop\College\A_Subjects\Semester 2\&- CSE2004 - DBMS\Project\source.cpp(1876,10): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+C:\Users\mythwin\Desktop\College\A_Subjects\Semester 2\&- CSE2004 - DBMS\Project\source.cpp(1877,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+  Project.vcxproj -> C:\Users\mythwin\Desktop\College\A_Subjects\Semester 2\&- CSE2004 - DBMS\Project\x64\Debug\Project.exe
